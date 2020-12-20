@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DietManager.Utils
+namespace ArbreSoft.Utils
 {
     public class DynamicUtil
     {
