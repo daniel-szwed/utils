@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace ArbreSoft.Utils
 {
-    public class DynamicUtil
+    public static class DynamicUtil
     {
         /// <summary>
         /// When property names are match model will be updated
@@ -21,7 +21,7 @@ namespace ArbreSoft.Utils
             var updated = new List<string>();
             foreach (var propertyInfo in model.GetType().GetProperties())
             {
-                var propName = propertyInfo.Name.ToLower();
+                var propName = propertyInfo.Name;
                 if (exclude != null && exclude.Split(',').ToList().Contains(propName))
                     continue;
                 string bodyPropertyName;
@@ -34,8 +34,8 @@ namespace ArbreSoft.Utils
                     bodyPropertyName = propName;
                 if (HasProperty(body, bodyPropertyName))
                 {
-                    var value = ((JObject)body).GetValue(bodyPropertyName);
-                    if (value.Type == JTokenType.Null)
+                    ((JsonElement)body).TryGetProperty(bodyPropertyName, out var value);
+                    if (value.ValueKind == JsonValueKind.Null)
                     {
                         propertyInfo.SetValue(model, null);
                     }
@@ -61,7 +61,13 @@ namespace ArbreSoft.Utils
         /// <returns>True if given object has specific property</returns>
         public static bool HasProperty(dynamic body, string property)
         {
-            return ((JObject)body).Properties().FirstOrDefault(x => x.Name == property) != null;
+            return ((JsonElement)body).TryGetProperty(property, out _);
+        }
+
+        public static string GetString(dynamic body, string property)
+        {
+            ((JsonElement)body).TryGetProperty(property, out var result);
+            return result.GetString();
         }
     }
 }
